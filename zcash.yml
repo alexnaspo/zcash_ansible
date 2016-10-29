@@ -1,0 +1,35 @@
+- hosts: all
+  remote_user: root
+  tasks:
+  - name: ensure zcash dependencies are installed
+    apt: name={{item}} state=installed
+    with_items:
+      - build-essential
+      - pkg-config
+      - libc6-dev
+      - m4  
+      - g++-multilib
+      - autoconf
+      - libtool
+      - ncurses-dev
+      - unzip
+      - git
+      - python
+      - zlib1g-dev
+      - wget
+      - bsdmainutils
+      - automake
+      - supervisor
+  - name: install zcash repo
+    git: repo=https://github.com/zcash/zcash.git
+      dest=~/Repos/zcash
+      version=v1.0.0-beta2
+  - name: run fetch params
+    shell: /root/Repos/zcash/zcutil/fetch-params.sh creates=/root/.zcash-params
+  - name: compile
+    shell: /root/Repos/zcash/zcutil/build.sh -j1 creates=/root/Repos/zcash/src/zcash-cli 
+  - file: path=/root/.zcash state=directory
+  - name: configuration
+    copy: src=zcash.conf dest=/root/.zcash/zcash.conf
+  - shell: /root/Repos/zcash/src/zcashd --daemon
+    
